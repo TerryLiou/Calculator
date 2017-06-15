@@ -12,11 +12,9 @@ class ViewController: UIViewController {
 
     //MARK: - Property
 
+    private var brain = CalculateBrind()
     var isTyping = false
     var isOperating = false
-    var operatorSign: String = ""
-    var fristDigital: Double = 0
-    var secendDigital: Double = 0
     var displayDigital: Double {
         
         get {
@@ -29,6 +27,7 @@ class ViewController: UIViewController {
                 return 0
             }
         }
+
         set {
             outPut.text = String(newValue)
         }
@@ -52,11 +51,8 @@ class ViewController: UIViewController {
                     
                     displayNumber += digital
                     outPut.text = displayNumber
-                    secendDigital = Double(displayNumber) ?? 0
-                    
                 }
             }
-            
         } else {
             
             isTyping = true
@@ -70,51 +66,29 @@ class ViewController: UIViewController {
                 } else {
                     
                     displayNumber = digital
-                    
                 }
                 
                 outPut.text = displayNumber
-                secendDigital = Double(displayNumber) ?? 0
             }
         }
     }
     
     @IBAction func operate(_ sender: UIButton) {
-        
-        isTyping = false
+
+        if isTyping {
+
+            brain.setOperand(displayDigital)
+            isTyping = false
+        }
         
         if let operatorSign = sender.currentTitle {
-            
-            displayDigital = singleOperate(operatorSign, displayDigital: displayDigital)
-            
+
+            brain.preformOperation(by: operatorSign)
         }
-    }
-    
-    @IBAction func binaryOperate(_ sender: UIButton) {
 
-        isTyping = false
+        if let result = brain.result {
 
-        if let binaryOperator = sender.currentTitle {
-            
-            switch binaryOperator {
-                
-            case "=":
-                
-                displayDigital = operateBy(operatorSign, with: fristDigital, and: secendDigital)
-                isOperating = false
-                
-            default:
-
-                if isOperating {
-                 
-                    displayDigital = operateBy(operatorSign, with: fristDigital, and: secendDigital)
-                    
-                }
-
-                fristDigital = displayDigital
-                operatorSign = binaryOperator
-                isOperating = true
-            }
+            displayDigital = result
         }
     }
 }
