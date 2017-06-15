@@ -14,6 +14,7 @@
 		7B4CF6051EEFCC8E002DF43C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7B4CF6031EEFCC8E002DF43C /* LaunchScreen.storyboard */; };
 		7B4CF6101EEFCC8E002DF43C /* CalculaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B4CF60F1EEFCC8E002DF43C /* CalculaterTests.swift */; };
 		7B4CF61B1EEFCC8E002DF43C /* CalculaterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B4CF61A1EEFCC8E002DF43C /* CalculaterUITests.swift */; };
+		7B4CF6291EEFE3AA002DF43C /* calculateAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B4CF6281EEFE3AA002DF43C /* calculateAPI.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,7 @@
 		7B4CF6161EEFCC8E002DF43C /* CalculaterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CalculaterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B4CF61A1EEFCC8E002DF43C /* CalculaterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculaterUITests.swift; sourceTree = "<group>"; };
 		7B4CF61C1EEFCC8E002DF43C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7B4CF6281EEFE3AA002DF43C /* calculateAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = calculateAPI.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +101,7 @@
 			children = (
 				7B4CF5FA1EEFCC8E002DF43C /* AppDelegate.swift */,
 				7B4CF5FC1EEFCC8E002DF43C /* ViewController.swift */,
+				7B4CF6281EEFE3AA002DF43C /* calculateAPI.swift */,
 				7B4CF5FE1EEFCC8E002DF43C /* Main.storyboard */,
 				7B4CF6011EEFCC8E002DF43C /* Assets.xcassets */,
 				7B4CF6031EEFCC8E002DF43C /* LaunchScreen.storyboard */,
@@ -259,6 +262,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7B4CF6291EEFE3AA002DF43C /* calculateAPI.swift in Sources */,
 				7B4CF5FD1EEFCC8E002DF43C /* ViewController.swift in Sources */,
 				7B4CF5FB1EEFCC8E002DF43C /* AppDelegate.swift in Sources */,
 			);
