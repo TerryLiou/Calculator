@@ -18,57 +18,89 @@ class ViewController: UIViewController {
     var displayDigital: Double {
         
         get {
-            if let digital = outPut.text {
-                
-                return Double(digital) ?? 0
-                
-            } else {
-                
-                return 0
-            }
+
+            guard let digital = outPut.text else { return 0 }
+
+            return Double(digital) ?? 0
         }
 
         set {
-            outPut.text = String(newValue)
+
+            outPut.text = newValue.truncatingRemainder(dividingBy: 1) == 0 ? String(Int(newValue)): String(newValue)
+
         }
     }
     
     @IBOutlet weak var outPut: UILabel!
+    @IBOutlet weak var outputLabel: UILabel!
     
     //MARK: - IBAction
 
     @IBAction func pressTheButton(_ sender: UIButton) {  // The group of number and "."
-        
-        var displayNumber =  outPut.text ?? "0"
-        
-        if isTyping {
-            
-            if let digital = sender.currentTitle {
-                
-                if displayNumber.contains(".") && digital == "." {
-                    // Avoid extra "." in displsyDigital
+
+        var displayStringDigit: String {
+
+            get {
+
+                return outPut.text ?? "0"
+            }
+
+            set {
+
+                if isTyping {
+
+                    outPut.text = displayStringDigit + newValue
+
                 } else {
-                    
-                    displayNumber += digital
-                    outPut.text = displayNumber
+
+                    if newValue == "." {
+
+                        outPut.text = displayStringDigit + newValue
+
+                    } else {
+
+                        isTyping = true
+                        outPut.text = newValue
+                    }
+
                 }
             }
-        } else {
-            
-            isTyping = true
-            
+        }
+
+        if isTyping {
+
             if let digital = sender.currentTitle {
-                
-                if digital == "." {
-                    
-                    displayNumber += digital
-                    
-                } else {
-                    
-                    displayNumber = digital
+
+                switch digital {
+
+                case "0":
+
+                    if !(displayStringDigit == "0") {
+
+                        displayStringDigit = digital
+
+                    }
+                case ".":
+
+                    if !displayStringDigit.contains(".") {
+
+                        displayStringDigit = digital
+                    }
+
+                default:
+
+                    displayStringDigit = digital
                 }
-                
-                outPut.text = displayNumber
+            }
+
+        } else {
+
+            if let digital = sender.currentTitle {
+
+                if !displayStringDigit.contains(".") && !(digital == ".") {
+
+                    displayStringDigit = digital
+                }
             }
         }
     }
@@ -78,7 +110,7 @@ class ViewController: UIViewController {
         if isTyping {
 
             brain.setOperand(displayDigital)
-            isTyping = false
+//            isTyping = false
         }
         
         if let operatorSign = sender.currentTitle {
@@ -89,6 +121,7 @@ class ViewController: UIViewController {
         if let result = brain.result {
 
             displayDigital = result
+            isTyping = false
         }
     }
 }
