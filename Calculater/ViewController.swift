@@ -13,8 +13,9 @@ class ViewController: UIViewController {
     //MARK: - Property
 
     private var brain = CalculateBrind()
+
     var isTyping = false
-    var isOperating = false
+    
     var displayDigital: Double {
         
         get {
@@ -27,7 +28,6 @@ class ViewController: UIViewController {
         set {
 
             outPut.text = newValue.truncatingRemainder(dividingBy: 1) == 0 ? String(Int(newValue)): String(newValue)
-
         }
     }
     
@@ -44,25 +44,27 @@ class ViewController: UIViewController {
 
                 return outPut.text ?? "0"
             }
-
             set {
 
-                if isTyping {
-
-                    outPut.text = displayStringDigit + newValue
-
+                if displayStringDigit.contains(".") && (newValue == ".") {
                 } else {
 
-                    if newValue == "." {
+                    if isTyping {
 
                         outPut.text = displayStringDigit + newValue
 
                     } else {
 
-                        isTyping = true
-                        outPut.text = newValue
-                    }
+                        if newValue == "." {
 
+                            outPut.text = displayStringDigit + newValue
+
+                        } else {
+
+                            outPut.text = newValue
+                        }
+                        isTyping = true
+                    }
                 }
             }
         }
@@ -78,50 +80,43 @@ class ViewController: UIViewController {
                     if !(displayStringDigit == "0") {
 
                         displayStringDigit = digital
-
                     }
+
                 case ".":
 
                     if !displayStringDigit.contains(".") {
 
                         displayStringDigit = digital
                     }
-
                 default:
 
                     displayStringDigit = digital
                 }
             }
-
         } else {
 
             if let digital = sender.currentTitle {
 
-                if !displayStringDigit.contains(".") && !(digital == ".") {
-
-                    displayStringDigit = digital
-                }
+                displayStringDigit = digital
             }
         }
+
+        brain.stringOperand = " \(displayStringDigit)"
     }
     
     @IBAction func operate(_ sender: UIButton) {
 
-        if isTyping {
+        isTyping = false
 
-            brain.setOperand(displayDigital)
-//            isTyping = false
-        }
+        brain.setOperand(displayDigital)
         
         if let operatorSign = sender.currentTitle {
 
             brain.preformOperation(by: operatorSign)
         }
-
         if let result = brain.result {
 
             displayDigital = result
-            isTyping = false
         }
     }
 }
