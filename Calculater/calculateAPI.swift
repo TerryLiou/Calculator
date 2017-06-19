@@ -14,6 +14,8 @@ struct CalculateBrind {
 
     var modifyingOperand = ""
 
+    private var frontOperattionIsAdditionOrSubtraction = false
+
     private var displayFormula = DisplayFormula()
 
     private var mathematicalFormula = ""
@@ -41,7 +43,7 @@ struct CalculateBrind {
 
         var mathematicalFormula = ""
 
-        var resultIsPending = false
+        var resultIsPending = true
 
         var tailString: String {
 
@@ -81,7 +83,6 @@ struct CalculateBrind {
         case unaryOperator((Double) -> Double)
         case binaryOperator((Double, Double) -> Double)
         case equal
-
     }
 
     private let operatedSign: [String: OperationType] = [
@@ -110,6 +111,8 @@ struct CalculateBrind {
     mutating func setOperand(_ digit: Double) {
 
         displayDigit = digit
+
+        displayFormula.resultIsPending = false
     }
 
     mutating func preformOperation(by sign: String) {
@@ -135,7 +138,11 @@ struct CalculateBrind {
 
                     stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
 
+                    displayFormula.resultIsPending = false
+
                 case "C":
+
+                    frontOperattionIsAdditionOrSubtraction = false
 
                     displayDigit = nil
 
@@ -147,8 +154,6 @@ struct CalculateBrind {
                     
                     break
                 }
-                displayFormula.resultIsPending = false
-                
                 displayDigit = digit
 
             case .unaryOperator(let function):
@@ -186,23 +191,33 @@ struct CalculateBrind {
                             modifyingOperand = ""
                         }
                     }
-
                     displayDigit = function(digit)
                 }
 
             case .binaryOperator(let function):
 
-                displayFormula.resultIsPending = true
+                if displayFormula.resultIsPending == false {
 
-                if let digit = displayDigit {
+                    displayFormula.resultIsPending = true
 
-                    displayFormula.mathematicalFormula += modifyingOperand + " \(sign)"
+                    if let digit = displayDigit {
 
-                    modifyingOperand = ""
+                        if frontOperattionIsAdditionOrSubtraction && (sign == "×" || sign == "÷") {
 
-                    prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
+                            displayFormula.mathematicalFormula =
+                                "( \(displayFormula.mathematicalFormula + modifyingOperand ))" + " \(sign)"
 
-                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
+                        } else {
+
+                            displayFormula.mathematicalFormula += modifyingOperand + " \(sign)"
+                        }
+                        modifyingOperand = ""
+
+                        prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
+                        
+                        stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
+                    }
+                    frontOperattionIsAdditionOrSubtraction = (sign == "+" || sign == "-") ? true: false
                 }
 
             case .equal:
@@ -220,11 +235,10 @@ struct CalculateBrind {
                     modifyingOperand = ""
                 }
             }
-
-            NotificationCenter.default.post(name: Notification.Name(rawValue: "stringFormulaNotification"), object: nil)
+            NotificationCenter.default.post(name: Notification.Name(rawValue: "stringFormulaNotification"),
+                                            object: nil)
         }
     }
-
     var result: Double? {
 
         get {
