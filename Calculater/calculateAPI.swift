@@ -10,22 +10,70 @@ import Foundation
 
 struct CalculateBrind {
 
-    var stringOperand = ""
+    //MARK: - Property
 
-    private var nextOperand = ""
+    var modifyingOperand = ""
+
+    private var displayFormula = DisplayFormula()
 
     private var mathematicalFormula = ""
 
     private var displayDigit: Double?
 
-    private var resultIsPending = false
+    var stringForLabelDisplay = "0"
 
-    private var tailString: String {
+    private var prepareToOperate: PrepareToOperate?
 
-        return resultIsPending ? " ..." : " ="
+    // 處理二元運算子
+    private struct PrepareToOperate {
+
+        let firstOperand: Double
+
+        let function: (Double, Double) -> Double
+
+        func execute(with secendDigit: Double) -> Double {
+
+            return function(firstOperand, secendDigit)
+        }
     }
+    // 處理字串算式
+    private struct DisplayFormula {
 
-    private var stringForLabelDisplay: String?
+        var mathematicalFormula = ""
+
+        var resultIsPending = false
+
+        var tailString: String {
+
+            return resultIsPending ? " ..." : " ="
+        }
+
+        mutating func formulaSubmit(_ operand: String) {
+
+            if resultIsPending {
+
+                mathematicalFormula += operand
+
+            } else {
+
+                mathematicalFormula = operand
+            }
+        }
+
+        mutating func displayFormulaSubmit(_ modifyingOperand: String?) -> String {
+
+            if modifyingOperand == nil {
+
+                return  mathematicalFormula + tailString
+
+            } else {
+
+                mathematicalFormula += modifyingOperand!
+
+                return  mathematicalFormula + tailString
+            }
+        }
+    }
 
     private enum OperationType {
 
@@ -50,32 +98,18 @@ struct CalculateBrind {
         "=": OperationType.equal
     ]
 
+    //MARK: - Functions
+    
+    // 將 Double 後方的無效數字消除 ex: 2.30 -> 2.3
     func modifyDouble(_ digit: Double) -> String {
 
         return digit.truncatingRemainder(dividingBy: 1) == 0 ? String(Int(digit)): String(digit)
     }
 
+    // 將待運算數字或是運算結果傳來
     mutating func setOperand(_ digit: Double) {
 
-//        mathematicalFormula += stringOperand
-
         displayDigit = digit
-
-//        stringOperand = ""
-    }
-
-    private var prepareToOperate: PrepareToOperate?
-
-    private struct PrepareToOperate {
-
-        let firstOperand: Double
-
-        let function: (Double, Double) -> Double
-
-        func execute(with secendDigit: Double) -> Double {
-
-            return function(firstOperand, secendDigit)
-        }
     }
 
     mutating func preformOperation(by sign: String) {
@@ -90,27 +124,30 @@ struct CalculateBrind {
 
                 case "π":
 
-                    if resultIsPending {
+                    if displayFormula.resultIsPending {
 
-                        mathematicalFormula += " \(sign)"
+                        displayFormula.mathematicalFormula += " \(sign)"
 
                     } else {
 
-                        mathematicalFormula = " \(sign)"
+                        displayFormula.mathematicalFormula = " \(sign)"
                     }
-                    stringForLabelDisplay = mathematicalFormula + tailString
+
+                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
 
                 case "C":
 
                     displayDigit = nil
 
-                    mathematicalFormula = ""
+                    stringForLabelDisplay = "0"
+
+                    displayFormula = DisplayFormula()
                     
                 default:
                     
                     break
                 }
-                resultIsPending = false
+                displayFormula.resultIsPending = false
                 
                 displayDigit = digit
 
@@ -122,31 +159,31 @@ struct CalculateBrind {
 
                     case "±":
 
-                        if resultIsPending {
+                        if displayFormula.resultIsPending {
 
-                            stringOperand = " (-( \(modifyDouble(digit))))"
+                            modifyingOperand = " (-( \(modifyDouble(digit))))"
 
                         } else {
 
-                            mathematicalFormula = " -(\(mathematicalFormula + stringOperand) )"
+                            displayFormula.mathematicalFormula = " -(\(displayFormula.mathematicalFormula + modifyingOperand) )"
 
-                            stringForLabelDisplay = mathematicalFormula + tailString
+                            stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
 
-                            stringOperand = ""
+                            modifyingOperand = ""
                         }
                     default:
 
-                        if resultIsPending {
+                        if displayFormula.resultIsPending {
 
-                            stringOperand = " \(sign)(\(modifyDouble(digit)) )"
+                            modifyingOperand = " \(sign)(\(modifyDouble(digit)) )"
 
                         } else {
 
-                            mathematicalFormula = " \(sign)(\(mathematicalFormula + stringOperand) )"
+                            displayFormula.mathematicalFormula = " \(sign)(\(displayFormula.mathematicalFormula + modifyingOperand) )"
 
-                            stringForLabelDisplay = mathematicalFormula + tailString
+                            stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
 
-                            stringOperand = ""
+                            modifyingOperand = ""
                         }
                     }
 
@@ -155,38 +192,36 @@ struct CalculateBrind {
 
             case .binaryOperator(let function):
 
-                resultIsPending = true
+                displayFormula.resultIsPending = true
 
                 if let digit = displayDigit {
 
-                    mathematicalFormula += stringOperand + " \(sign)"
+                    displayFormula.mathematicalFormula += modifyingOperand + " \(sign)"
 
-                    stringOperand = ""
+                    modifyingOperand = ""
 
                     prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
 
-                    stringForLabelDisplay = mathematicalFormula + tailString
+                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
                 }
 
             case .equal:
 
                 if prepareToOperate != nil && displayDigit != nil {
 
-                    resultIsPending = false
+                    displayFormula.resultIsPending = false
 
                     displayDigit = prepareToOperate?.execute(with: displayDigit!)
 
                     prepareToOperate = nil
 
-                    mathematicalFormula += stringOperand
+                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperand)
 
-                    stringForLabelDisplay = mathematicalFormula + tailString
-
-                    stringOperand = ""
+                    modifyingOperand = ""
                 }
             }
 
-            print(stringForLabelDisplay ?? "nothing to print")
+            NotificationCenter.default.post(name: Notification.Name(rawValue: "stringFormulaNotification"), object: nil)
         }
     }
 

@@ -12,6 +12,18 @@ class ViewController: UIViewController {
 
     //MARK: - Property
 
+    override func viewDidLoad() {
+
+        super.viewDidLoad()
+
+        NotificationCenter.default.addObserver(forName: Notification.Name(rawValue: "stringFormulaNotification"),
+                                               object: nil,
+                                               queue: nil) { (_) in
+                                                self.outputLabel.text = self.brain.stringForLabelDisplay
+        }
+
+    }
+    
     private var brain = CalculateBrind()
 
     var isTyping = false
@@ -101,7 +113,7 @@ class ViewController: UIViewController {
             }
         }
 
-        brain.stringOperand = " \(displayStringDigit)"
+        brain.modifyingOperand = " \(displayStringDigit)"
     }
     
     @IBAction func operate(_ sender: UIButton) {
@@ -118,5 +130,10 @@ class ViewController: UIViewController {
 
             displayDigital = result
         }
+    }
+
+    deinit {
+
+        NotificationCenter.default.removeObserver(self)
     }
 }
