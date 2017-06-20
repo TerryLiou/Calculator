@@ -16,112 +16,109 @@ class ViewController: UIViewController {
 
         super.viewDidLoad()
 
+        // 用 Notification 來通知 stringForLabelDisplay 已經更新
         NotificationCenter.default.addObserver(forName: Notification.Name(rawValue: "stringFormulaNotification"),
                                                object: nil,
                                                queue: nil) { (_) in
                                                 self.outputLabel.text = self.brain.stringForLabelDisplay
         }
-
     }
     
     private var brain = CalculateBrind()
-
     var isTyping = false
-    
-    var displayDigital: Double {
+    var displayDigital: Double { // 呈現在計算機上的計算結果，get 時將 label 轉成 Double
         
         get {
 
-            guard let digital = outPut.text else { return 0 }
-
-            return Double(digital) ?? 0
+            return Double(displayStringDigit) ?? 0
         }
 
-        set {
+        set { // 判斷輸出的數字格式是不是有多餘的 0
 
-            outPut.text = newValue.truncatingRemainder(dividingBy: 1) == 0 ? String(Int(newValue)): String(newValue)
+            outPut.text = brain.modifyDouble(newValue)
         }
     }
-    
-    @IBOutlet weak var outPut: UILabel!
-    @IBOutlet weak var outputLabel: UILabel!
-    
-    //MARK: - IBAction
 
-    @IBAction func pressTheButton(_ sender: UIButton) {  // The group of number and "."
+    var displayStringDigit: String { // 處理來自 button.currentTitle 的字串資訊
 
-        var displayStringDigit: String {
+        get {
 
-            get {
+            return outPut.text ?? "0"
+        }
+        set {
 
-                return outPut.text ?? "0"
-            }
-            set {
+            if displayStringDigit.contains(".") && (newValue == ".") {
+            } else {
 
-                if displayStringDigit.contains(".") && (newValue == ".") {
-                } else {
+                if isTyping {
 
-                    if isTyping {
+                    switch newValue {
 
-                        outPut.text = displayStringDigit + newValue
+                    case "←":
 
-                    } else {
+                        if self.displayStringDigit.characters.count == 1 {
 
-                        if newValue == "." {
-
-                            outPut.text = displayStringDigit + newValue
-
+                            outPut.text = "0"
+                            isTyping = false
                         } else {
 
-                            outPut.text = newValue
+                            outPut.text = String(self.displayStringDigit.characters.dropLast(1))
                         }
+
+                    case "0":
+
+                        if !(displayStringDigit == "0") {
+
+                            outPut.text = displayStringDigit + newValue
+                        }
+
+                    default:
+                        
+                        outPut.text = displayStringDigit + newValue
+                    }
+                } else {
+
+                    if newValue == "." {
+
+                        outPut.text = displayStringDigit + newValue
+                        isTyping = true
+
+                    } else if !(newValue == "←") {
+
+                        outPut.text = newValue
                         isTyping = true
                     }
                 }
             }
         }
+    }
 
-        if isTyping {
+    //MARK: - IBOutlet
 
-            if let digital = sender.currentTitle {
+    @IBOutlet weak var outPut: UILabel!
+    @IBOutlet weak var outputLabel: UILabel!
+    
+    //MARK: - IBAction
 
-                switch digital {
+    //所有數字和小數點的按鈕
+    @IBAction func pressTheButton(_ sender: UIButton) {
 
-                case "0":
+        if let digital = sender.currentTitle {
 
-                    if !(displayStringDigit == "0") {
-
-                        displayStringDigit = digital
-                    }
-
-                case ".":
-
-                    if !displayStringDigit.contains(".") {
-
-                        displayStringDigit = digital
-                    }
-                default:
-
-                    displayStringDigit = digital
-                }
-            }
-        } else {
-
-            if let digital = sender.currentTitle {
-
-                displayStringDigit = digital
-            }
+            displayStringDigit = digital
         }
 
         brain.modifyingOperand = " \(displayStringDigit)"
     }
-    
+
+    //所有計算符號包括 π 和 C 的按鈕
     @IBAction func operate(_ sender: UIButton) {
 
-        isTyping = false
+        if isTyping {
 
-        brain.setOperand(displayDigital)
-        
+            brain.setOperand(displayDigital)
+        }
+
         if let operatorSign = sender.currentTitle {
 
             brain.preformOperation(by: operatorSign)
@@ -130,6 +127,8 @@ class ViewController: UIViewController {
 
             displayDigital = result
         }
+
+        isTyping = false
     }
 
     deinit {

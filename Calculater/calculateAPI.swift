@@ -12,25 +12,18 @@ struct CalculateBrind {
 
     //MARK: - Property
 
-    var modifyingOperand = ""
-
-    private var frontOperattionIsAdditionOrSubtraction = false
-
-    private var displayFormula = DisplayFormula()
-
-    private var mathematicalFormula = ""
-
-    private var displayDigit: Double?
-
+    var modifyingOperand = ""   //正在輸入中的數字，因為可能會再被編輯 (unaryOperation) 所以先暫存
     var stringForLabelDisplay = "0"
-
+    private var frontOperattionIsAdditionOrSubtraction = false
+    private var displayFormula = DisplayFormula()
+    private var mathematicalFormula = ""
+    private var displayDigit: Double?
     private var prepareToOperate: PrepareToOperate?
 
     // 處理二元運算子
     private struct PrepareToOperate {
 
         let firstOperand: Double
-
         let function: (Double, Double) -> Double
 
         func execute(with secendDigit: Double) -> Double {
@@ -42,9 +35,7 @@ struct CalculateBrind {
     private struct DisplayFormula {
 
         var mathematicalFormula = ""
-
         var resultIsPending = true
-
         var tailString: String {
 
             return resultIsPending ? " ..." : " ="
@@ -55,7 +46,6 @@ struct CalculateBrind {
             if resultIsPending {
 
                 mathematicalFormula += operand
-
             } else {
 
                 mathematicalFormula = operand
@@ -67,7 +57,6 @@ struct CalculateBrind {
             if modifyingOperand == nil {
 
                 return  mathematicalFormula + tailString
-
             } else {
 
                 mathematicalFormula += modifyingOperand!
@@ -100,21 +89,29 @@ struct CalculateBrind {
     ]
 
     //MARK: - Functions
-    
+
     // 將 Double 後方的無效數字消除 ex: 2.30 -> 2.3
     func modifyDouble(_ digit: Double) -> String {
 
         return digit.truncatingRemainder(dividingBy: 1) == 0 ? String(Int(digit)): String(digit)
     }
 
+    private mutating func reset() {
+
+        frontOperattionIsAdditionOrSubtraction = false
+        displayDigit = nil
+        stringForLabelDisplay = "0"
+        displayFormula = DisplayFormula()
+    }
+
     // 將待運算數字或是運算結果傳來
     mutating func setOperand(_ digit: Double) {
 
         displayDigit = digit
-
         displayFormula.resultIsPending = false
     }
 
+    // 所有運算符號的判斷
     mutating func preformOperation(by sign: String) {
 
         if let symbol = operatedSign[sign] {
@@ -130,26 +127,16 @@ struct CalculateBrind {
                     if displayFormula.resultIsPending {
 
                         displayFormula.mathematicalFormula += " \(sign)"
-
                     } else {
-
+                        
                         displayFormula.mathematicalFormula = " \(sign)"
                     }
-
                     stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
-
                     displayFormula.resultIsPending = false
 
                 case "C":
 
-                    frontOperattionIsAdditionOrSubtraction = false
-
-                    displayDigit = nil
-
-                    stringForLabelDisplay = "0"
-
-                    displayFormula = DisplayFormula()
-                    
+                    reset()
                 default:
                     
                     break
@@ -205,7 +192,7 @@ struct CalculateBrind {
                         if frontOperattionIsAdditionOrSubtraction && (sign == "×" || sign == "÷") {
 
                             displayFormula.mathematicalFormula =
-                                "( \(displayFormula.mathematicalFormula + modifyingOperand ))" + " \(sign)"
+                                "( \(displayFormula.mathematicalFormula + modifyingOperand ) )" + " \(sign)"
 
                         } else {
 
@@ -225,13 +212,9 @@ struct CalculateBrind {
                 if prepareToOperate != nil && displayDigit != nil {
 
                     displayFormula.resultIsPending = false
-
                     displayDigit = prepareToOperate?.execute(with: displayDigit!)
-
                     prepareToOperate = nil
-
                     stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperand)
-
                     modifyingOperand = ""
                 }
             }
@@ -239,11 +222,6 @@ struct CalculateBrind {
                                             object: nil)
         }
     }
-    var result: Double? {
 
-        get {
-
-                return displayDigit
-        }
-    }
+    var result: Double? { return displayDigit }
 }
