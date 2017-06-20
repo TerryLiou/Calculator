@@ -107,7 +107,6 @@ class ViewController: UIViewController {
 
             displayStringDigit = digital
         }
-
         brain.modifyingOperand = " \(displayStringDigit)"
     }
 

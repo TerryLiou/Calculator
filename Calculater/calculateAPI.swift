@@ -14,6 +14,7 @@ struct CalculateBrind {
 
     var modifyingOperand = ""   //正在輸入中的數字，因為可能會再被編輯 (unaryOperation) 所以先暫存
     var stringForLabelDisplay = "0"
+    private var isConstant = false
     private var frontOperattionIsAdditionOrSubtraction = false
     private var displayFormula = DisplayFormula()
     private var mathematicalFormula = ""
@@ -35,7 +36,7 @@ struct CalculateBrind {
     private struct DisplayFormula {
 
         var mathematicalFormula = ""
-        var resultIsPending = true
+        var resultIsPending = false
         var tailString: String {
 
             return resultIsPending ? " ..." : " ="
@@ -102,10 +103,18 @@ struct CalculateBrind {
         displayDigit = nil
         stringForLabelDisplay = "0"
         displayFormula = DisplayFormula()
+        prepareToOperate = nil
     }
 
     // 將待運算數字或是運算結果傳來
     mutating func setOperand(_ digit: Double) {
+
+        // 當不在運算式當中輸入新的數字時，判斷為新的算式，將 displayFormula 重置
+        if !displayFormula.resultIsPending {
+
+            displayFormula = DisplayFormula()
+            modifyingOperand = modifyDouble(digit)
+        }
 
         displayDigit = digit
         displayFormula.resultIsPending = false
@@ -128,11 +137,13 @@ struct CalculateBrind {
 
                         displayFormula.mathematicalFormula += " \(sign)"
                     } else {
-                        
+
+                        prepareToOperate = nil
                         displayFormula.mathematicalFormula = " \(sign)"
                     }
                     stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
                     displayFormula.resultIsPending = false
+                    isConstant = true
 
                 case "C":
 
@@ -189,6 +200,18 @@ struct CalculateBrind {
 
                     if let digit = displayDigit {
 
+                        if prepareToOperate != nil {
+
+                            displayDigit = prepareToOperate?.execute(with: digit)
+                            modifyingOperand = isConstant ? "": modifyDouble(digit)
+                            prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
+                            isConstant = false
+
+                        } else {
+
+                            prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
+                        }
+
                         if frontOperattionIsAdditionOrSubtraction && (sign == "×" || sign == "÷") {
 
                             displayFormula.mathematicalFormula =
@@ -200,8 +223,6 @@ struct CalculateBrind {
                         }
                         modifyingOperand = ""
 
-                        prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
-                        
                         stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
                     }
                     frontOperattionIsAdditionOrSubtraction = (sign == "+" || sign == "-") ? true: false
@@ -209,7 +230,7 @@ struct CalculateBrind {
 
             case .equal:
 
-                if prepareToOperate != nil && displayDigit != nil {
+                if prepareToOperate != nil && displayDigit != nil && displayFormula.resultIsPending == false {
 
                     displayFormula.resultIsPending = false
                     displayDigit = prepareToOperate?.execute(with: displayDigit!)
