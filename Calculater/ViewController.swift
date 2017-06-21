@@ -25,7 +25,7 @@ class ViewController: UIViewController {
     }
     
     private var brain = CalculateBrind()
-    var isTyping = false
+    var isTypingDigit = false
     var displayDigital: Double { // 呈現在計算機上的計算結果，get 時將 label 轉成 Double
         
         get {
@@ -47,10 +47,10 @@ class ViewController: UIViewController {
         }
         set {
 
-            if displayStringDigit.contains(".") && (newValue == ".") {
+            if displayStringDigit.contains(".") && (newValue == ".") {  //避免不合法的浮點數
             } else {
 
-                if isTyping {
+                if isTypingDigit {
 
                     switch newValue {
 
@@ -59,7 +59,7 @@ class ViewController: UIViewController {
                         if self.displayStringDigit.characters.count == 1 {
 
                             outPut.text = "0"
-                            isTyping = false
+                            isTypingDigit = false
                         } else {
 
                             outPut.text = String(self.displayStringDigit.characters.dropLast(1))
@@ -76,17 +76,17 @@ class ViewController: UIViewController {
                         
                         outPut.text = displayStringDigit + newValue
                     }
-                } else {
+                } else { // 第一次敲擊數字鍵
 
-                    if newValue == "." {
+                    if newValue == "." { // 一開始就按下 "." 將輸出 "0."
 
                         outPut.text = displayStringDigit + newValue
-                        isTyping = true
+                        isTypingDigit = true
 
-                    } else if !(newValue == "←") {
+                    } else if !(newValue == "←") { // 禁止一開始就按下修正鍵
 
                         outPut.text = newValue
-                        isTyping = true
+                        isTypingDigit = true
                     }
                 }
             }
@@ -100,7 +100,7 @@ class ViewController: UIViewController {
     
     //MARK: - IBAction
 
-    //所有數字和小數點的按鈕
+    //所有數字和小數點的按鈕包括修正鍵
     @IBAction func pressTheButton(_ sender: UIButton) {
 
         if let digital = sender.currentTitle {
@@ -113,7 +113,7 @@ class ViewController: UIViewController {
     //所有計算符號包括 π 和 C 的按鈕
     @IBAction func operate(_ sender: UIButton) {
 
-        if isTyping {
+        if isTypingDigit {
 
             brain.setOperand(displayDigital)
         }
@@ -122,12 +122,13 @@ class ViewController: UIViewController {
 
             brain.preformOperation(by: operatorSign)
         }
+
         if let result = brain.result {
 
             displayDigital = result
         }
 
-        isTyping = false
+        isTypingDigit = false
     }
 
     deinit {

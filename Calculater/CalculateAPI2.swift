@@ -1,14 +1,14 @@
 //
-//  calculateAPI.swift
+//  CalculateAPI2.swift
 //  Calculater
 //
-//  Created by 劉洧熏 on 2017/6/13.
+//  Created by 劉洧熏 on 2017/6/21.
 //  Copyright © 2017年 劉洧熏. All rights reserved.
 //
 
 import Foundation
 
-struct CalculateBrind {
+struct CalculateBrind2 {
 
     //MARK: - Property
 
@@ -19,6 +19,7 @@ struct CalculateBrind {
     private var displayFormula = DisplayFormula()
     private var mathematicalFormula = ""
     private var displayDigit: Double?
+    private var binaryOperand: Double?
     private var prepareToOperate: PrepareToOperate?
 
     // 處理二元運算子
@@ -41,17 +42,17 @@ struct CalculateBrind {
 
             return resultIsPending ? " ..." : " ="
         }
-//
-//        mutating func formulaSubmit(_ operand: String) {
-//
-//            if resultIsPending {
-//
-//                mathematicalFormula += operand
-//            } else {
-//
-//                mathematicalFormula = operand
-//            }
-//        }
+        //
+        //        mutating func formulaSubmit(_ operand: String) {
+        //
+        //            if resultIsPending {
+        //
+        //                mathematicalFormula += operand
+        //            } else {
+        //
+        //                mathematicalFormula = operand
+        //            }
+        //        }
         // stringForLabelDisplay 由 mathematicalFormula 和 modifyingOperand 和 tailString 組成
         mutating func displayFormulaSubmit(_ tmpOperand: String?) -> String {
 
@@ -118,7 +119,8 @@ struct CalculateBrind {
         }
 
         displayDigit = digit
-        displayFormula.resultIsPending = false
+        binaryOperand = digit
+        displayFormula.resultIsPending = true
     }
 
     // 所有運算符號的判斷
@@ -150,7 +152,7 @@ struct CalculateBrind {
 
                     reset()
                 default:
-                    
+
                     break
                 }
                 displayDigit = digit
@@ -195,44 +197,41 @@ struct CalculateBrind {
 
             case .binaryOperator(let function):
 
-                if displayFormula.resultIsPending == false {
+                if let digit = binaryOperand {
+                    //==============================判斷公式存在於否的計算邏輯============================
+                    if prepareToOperate != nil {
 
-                    displayFormula.resultIsPending = true
+                        displayDigit = prepareToOperate?.execute(with: digit)
+                        prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
+                        isConstant = false
 
-                    if let digit = displayDigit {
+                    } else {
 
-                        if prepareToOperate != nil {
-
-                            displayDigit = prepareToOperate?.execute(with: digit)
-                            modifyingOperand = isConstant ? "": modifyDouble(digit)
-                            prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
-                            isConstant = false
-
-                        } else {
-
-                            prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
-                        }
-
-                        if frontOperattionIsAdditionOrSubtraction && (sign == "×" || sign == "÷") {
-
-                            displayFormula.mathematicalFormula =
-                                "( \(displayFormula.mathematicalFormula + modifyingOperand ) )" + " \(sign)"
-
-                        } else {
-
-                            displayFormula.mathematicalFormula += modifyingOperand + " \(sign)"
-                        }
-                        modifyingOperand = ""
-
-                        stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
+                        prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
                     }
-                    frontOperattionIsAdditionOrSubtraction = (sign == "+" || sign == "-") ? true: false
+                    // =======================產生顯示公式字串的邏輯=====================================
+                    if frontOperattionIsAdditionOrSubtraction && (sign == "×" || sign == "÷") {
+
+                        displayFormula.mathematicalFormula =
+                            "( \(displayFormula.mathematicalFormula + modifyingOperand ) )" + " \(sign)"
+
+                    } else {
+
+                        displayFormula.mathematicalFormula += modifyingOperand + " \(sign)"
+                    }
+                    modifyingOperand = ""
+                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
+                    // ==============================================================================
+                } else {
+
+                    prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
                 }
-
+                frontOperattionIsAdditionOrSubtraction = (sign == "+" || sign == "-") ? true: false
+                
             case .equal:
-
+                
                 if prepareToOperate != nil && displayDigit != nil && displayFormula.resultIsPending == false {
-
+                    
                     displayDigit = prepareToOperate?.execute(with: displayDigit!)
                     prepareToOperate = nil
                     stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperand)
@@ -243,6 +242,6 @@ struct CalculateBrind {
                                             object: nil)
         }
     }
-
+    
     var result: Double? { return displayDigit }
 }
