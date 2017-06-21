@@ -15,6 +15,7 @@
 		7B4CF6101EEFCC8E002DF43C /* CalculaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B4CF60F1EEFCC8E002DF43C /* CalculaterTests.swift */; };
 		7B4CF61B1EEFCC8E002DF43C /* CalculaterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B4CF61A1EEFCC8E002DF43C /* CalculaterUITests.swift */; };
 		7B4CF6291EEFE3AA002DF43C /* calculateAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B4CF6281EEFE3AA002DF43C /* calculateAPI.swift */; };
+		7B5DEAA71EFA6521003E7A2A /* CalculateAPI2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5DEAA61EFA6521003E7A2A /* CalculateAPI2.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 		7B4CF61A1EEFCC8E002DF43C /* CalculaterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculaterUITests.swift; sourceTree = "<group>"; };
 		7B4CF61C1EEFCC8E002DF43C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7B4CF6281EEFE3AA002DF43C /* calculateAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = calculateAPI.swift; sourceTree = "<group>"; };
+		7B5DEAA61EFA6521003E7A2A /* CalculateAPI2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CalculateAPI2.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +105,7 @@
 				7B4CF5FC1EEFCC8E002DF43C /* ViewController.swift */,
 				7B4CF6281EEFE3AA002DF43C /* calculateAPI.swift */,
 				7B4CF5FE1EEFCC8E002DF43C /* Main.storyboard */,
+				7B5DEAA61EFA6521003E7A2A /* CalculateAPI2.swift */,
 				7B4CF6011EEFCC8E002DF43C /* Assets.xcassets */,
 				7B4CF6031EEFCC8E002DF43C /* LaunchScreen.storyboard */,
 				7B4CF6061EEFCC8E002DF43C /* Info.plist */,
@@ -262,6 +265,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7B5DEAA71EFA6521003E7A2A /* CalculateAPI2.swift in Sources */,
 				7B4CF6291EEFE3AA002DF43C /* calculateAPI.swift in Sources */,
 				7B4CF5FD1EEFCC8E002DF43C /* ViewController.swift in Sources */,
 				7B4CF5FB1EEFCC8E002DF43C /* AppDelegate.swift in Sources */,
@@ -511,6 +515,7 @@
 				7B4CF6211EEFCC8E002DF43C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		7B4CF6221EEFCC8E002DF43C /* Build configuration list for PBXNativeTarget "CalculaterTests" */ = {
 			isa = XCConfigurationList;
@@ -519,6 +524,7 @@
 				7B4CF6241EEFCC8E002DF43C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		7B4CF6251EEFCC8E002DF43C /* Build configuration list for PBXNativeTarget "CalculaterUITests" */ = {
 			isa = XCConfigurationList;
@@ -527,6 +533,7 @@
 				7B4CF6271EEFCC8E002DF43C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
