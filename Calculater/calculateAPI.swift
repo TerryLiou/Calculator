@@ -10,9 +10,7 @@ import Foundation
 
 struct CalculateBrind {
 
-    var stringOperand = ""
-
-    private var nextOperand = ""
+    var modifingOperand = ""
 
     private var mathematicalFormula = ""
 
@@ -57,11 +55,7 @@ struct CalculateBrind {
 
     mutating func setOperand(_ digit: Double) {
 
-//        mathematicalFormula += stringOperand
-
         displayDigit = digit
-
-//        stringOperand = ""
     }
 
     private var prepareToOperate: PrepareToOperate?
@@ -124,29 +118,29 @@ struct CalculateBrind {
 
                         if resultIsPending {
 
-                            stringOperand = " (-( \(modifyDouble(digit))))"
+                            modifingOperand = " (-( \(modifyDouble(digit))))"
 
                         } else {
 
-                            mathematicalFormula = " -(\(mathematicalFormula + stringOperand) )"
+                            mathematicalFormula = " -(\(mathematicalFormula + modifingOperand) )"
 
                             stringForLabelDisplay = mathematicalFormula + tailString
 
-                            stringOperand = ""
+                            modifingOperand = ""
                         }
                     default:
 
                         if resultIsPending {
 
-                            stringOperand = " \(sign)(\(modifyDouble(digit)) )"
+                            modifingOperand = " \(sign)(\(modifyDouble(digit)) )"
 
                         } else {
 
-                            mathematicalFormula = " \(sign)(\(mathematicalFormula + stringOperand) )"
+                            mathematicalFormula = " \(sign)(\(mathematicalFormula + modifingOperand) )"
 
                             stringForLabelDisplay = mathematicalFormula + tailString
 
-                            stringOperand = ""
+                            modifingOperand = ""
                         }
                     }
 
@@ -159,9 +153,9 @@ struct CalculateBrind {
 
                 if let digit = displayDigit {
 
-                    mathematicalFormula += stringOperand + " \(sign)"
+                    mathematicalFormula += modifingOperand + " \(sign)"
 
-                    stringOperand = ""
+                    modifingOperand = ""
 
                     prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
 
@@ -178,11 +172,11 @@ struct CalculateBrind {
 
                     prepareToOperate = nil
 
-                    mathematicalFormula += stringOperand
+                    mathematicalFormula += modifingOperand
 
                     stringForLabelDisplay = mathematicalFormula + tailString
 
-                    stringOperand = ""
+                    modifingOperand = ""
                 }
             }
 

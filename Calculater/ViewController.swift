@@ -101,7 +101,7 @@ class ViewController: UIViewController {
             }
         }
 
-        brain.stringOperand = " \(displayStringDigit)"
+        brain.modifingOperand = " \(displayStringDigit)"
     }
     
     @IBAction func operate(_ sender: UIButton) {
