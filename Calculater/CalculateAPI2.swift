@@ -12,14 +12,19 @@ struct CalculateBrind2 {
 
     //MARK: - Property
 
+    var modifyingOperater = ""
     var modifyingOperand = ""            // 正在輸入中的數字，因為可能會再被編輯 (unaryOperation) 所以先暫存
     var stringForLabelDisplay = "0"      // 將要在 UI 上呈現的算式
-    private var isConstant = false
     private var frontOperattionIsAdditionOrSubtraction = false
+    private var secnedOperattionIsMultiplyOrDivided = false
+    private var haveParentheses: Bool{
+        return frontOperattionIsAdditionOrSubtraction && secnedOperattionIsMultiplyOrDivided
+    }
+    private var isContants = false
     private var displayFormula = DisplayFormula()
     private var mathematicalFormula = ""
     private var displayDigit: Double?
-    private var binaryOperand: Double?
+    private var tmpOperand: Double?
     private var prepareToOperate: PrepareToOperate?
 
     // 處理二元運算子
@@ -42,29 +47,30 @@ struct CalculateBrind2 {
 
             return resultIsPending ? " ..." : " ="
         }
-        //
-        //        mutating func formulaSubmit(_ operand: String) {
-        //
-        //            if resultIsPending {
-        //
-        //                mathematicalFormula += operand
-        //            } else {
-        //
-        //                mathematicalFormula = operand
-        //            }
-        //        }
-        // stringForLabelDisplay 由 mathematicalFormula 和 modifyingOperand 和 tailString 組成
-        mutating func displayFormulaSubmit(_ tmpOperand: String?) -> String {
 
-            if tmpOperand == nil {
+        mutating func commit(wiht modifyOperand: String, haveParentheses: Bool) {
+
+            if haveParentheses {
+                mathematicalFormula = "(\(mathematicalFormula)) \(modifyOperand)"
+            } else {
+                mathematicalFormula += modifyOperand
+            }
+        }
+
+        mutating func displayFormulaSubmit(_ tmp: String?, haveParentheses: Bool) -> String {
+
+            if tmp == nil {
 
                 return  mathematicalFormula + tailString
             } else {
 
-                mathematicalFormula += tmpOperand!
+                if haveParentheses {
 
+                    return "(\(mathematicalFormula))" + tmp! + tailString
+                } else {
 
-                return  mathematicalFormula + tailString
+                    return mathematicalFormula + tmp! + tailString
+                }
             }
         }
     }
@@ -96,7 +102,13 @@ struct CalculateBrind2 {
     // 將 Double 後方的無效數字消除 ex: 2.30 -> 2.3
     func modifyDouble(_ digit: Double) -> String {
 
-        return digit.truncatingRemainder(dividingBy: 1) == 0 ? String(Int(digit)): String(digit)
+        if digit.truncatingRemainder(dividingBy: Double.pi) == 0 {
+
+            return "π"
+        } else {
+
+            return digit.truncatingRemainder(dividingBy: 1) == 0 ? String(Int(digit)): String(digit)
+        }
     }
 
     private mutating func reset() {
@@ -115,11 +127,10 @@ struct CalculateBrind2 {
         if !displayFormula.resultIsPending {
 
             displayFormula = DisplayFormula()
-            modifyingOperand = modifyDouble(digit)
         }
 
         displayDigit = digit
-        binaryOperand = digit
+        tmpOperand = digit
         displayFormula.resultIsPending = true
     }
 
@@ -136,18 +147,7 @@ struct CalculateBrind2 {
 
                 case "π":
 
-                    if displayFormula.resultIsPending {
-
-                        displayFormula.mathematicalFormula += " \(sign)"
-                    } else {
-
-                        prepareToOperate = nil
-                        displayFormula.mathematicalFormula = " \(sign)"
-                    }
-                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
-                    displayFormula.resultIsPending = false
-                    isConstant = true
-
+                    stringForLabelDisplay = displayFormula.displayFormulaSubmit("\(modifyingOperater) \(sign)", haveParentheses: false)
                 case "C":
 
                     reset()
@@ -156,6 +156,7 @@ struct CalculateBrind2 {
                     break
                 }
                 displayDigit = digit
+                tmpOperand = digit
 
             case .unaryOperator(let function):
 
@@ -164,78 +165,80 @@ struct CalculateBrind2 {
                     switch sign {
 
                     case "±":
-
+                        // =======================產生顯示公式字串的邏輯=====================================
                         if displayFormula.resultIsPending {
 
-                            modifyingOperand = " (-( \(modifyDouble(digit))))"
+                            modifyingOperater = " (-( \(modifyDouble(digit))))"
 
                         } else {
 
-                            displayFormula.mathematicalFormula = " -(\(displayFormula.mathematicalFormula + modifyingOperand) )"
+                            displayFormula.mathematicalFormula = " -(\(displayFormula.mathematicalFormula + modifyingOperater) )"
 
-                            stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
+                            stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil, haveParentheses: false)
 
-                            modifyingOperand = ""
+                            modifyingOperater = ""
                         }
                     default:
 
                         if displayFormula.resultIsPending {
 
-                            modifyingOperand = " \(sign)(\(modifyDouble(digit)) )"
+                            modifyingOperater = " \(sign)(\(modifyDouble(digit)) )"
 
                         } else {
 
-                            displayFormula.mathematicalFormula = " \(sign)(\(displayFormula.mathematicalFormula + modifyingOperand) )"
+                            displayFormula.mathematicalFormula = " \(sign)(\(displayFormula.mathematicalFormula + modifyingOperater) )"
 
-                            stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
+                            stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil, haveParentheses: false)
 
-                            modifyingOperand = ""
+                            modifyingOperater = ""
                         }
                     }
+                    // ==============================================================================
                     displayDigit = function(digit)
                 }
 
             case .binaryOperator(let function):
 
-                if let digit = binaryOperand {
+                if let digit = tmpOperand {
                     //==============================判斷公式存在於否的計算邏輯============================
                     if prepareToOperate != nil {
 
                         displayDigit = prepareToOperate?.execute(with: digit)
                         prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
-                        isConstant = false
+                        displayFormula.commit(wiht: modifyingOperater + " \(modifyDouble(digit))", haveParentheses: haveParentheses)
+                        frontOperattionIsAdditionOrSubtraction = !secnedOperattionIsMultiplyOrDivided
 
                     } else {
 
                         prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
+                        displayFormula.commit(wiht: " \(modifyDouble(digit))", haveParentheses: false)
                     }
                     // =======================產生顯示公式字串的邏輯=====================================
-                    if frontOperattionIsAdditionOrSubtraction && (sign == "×" || sign == "÷") {
 
-                        displayFormula.mathematicalFormula =
-                            "( \(displayFormula.mathematicalFormula + modifyingOperand ) )" + " \(sign)"
-
-                    } else {
-
-                        displayFormula.mathematicalFormula += modifyingOperand + " \(sign)"
-                    }
-                    modifyingOperand = ""
-                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil)
+                    modifyingOperater = " \(sign)"
+                    secnedOperattionIsMultiplyOrDivided = (modifyingOperater == " ×" || modifyingOperater == " ÷") ? true: false
+                    tmpOperand = nil
+                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperater,
+                                                                                haveParentheses: haveParentheses)
                     // ==============================================================================
                 } else {
 
                     prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
+                    modifyingOperater = " \(sign)"
+                    secnedOperattionIsMultiplyOrDivided = (modifyingOperater == " ×" || modifyingOperater == " ÷") ? true: false
+                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperater,
+                                                                                haveParentheses: haveParentheses)
                 }
-                frontOperattionIsAdditionOrSubtraction = (sign == "+" || sign == "-") ? true: false
                 
             case .equal:
                 
-                if prepareToOperate != nil && displayDigit != nil && displayFormula.resultIsPending == false {
+                if prepareToOperate != nil && displayDigit != nil && displayFormula.resultIsPending == true {
                     
                     displayDigit = prepareToOperate?.execute(with: displayDigit!)
                     prepareToOperate = nil
-                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperand)
-                    modifyingOperand = ""
+                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperater, haveParentheses: false)
+                    modifyingOperater = ""
+                    displayFormula.resultIsPending = false
                 }
             }
             NotificationCenter.default.post(name: Notification.Name(rawValue: "stringFormulaNotification"),

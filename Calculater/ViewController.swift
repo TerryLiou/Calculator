@@ -24,7 +24,7 @@ class ViewController: UIViewController {
         }
     }
     
-    private var brain = CalculateBrind()
+    private var brain = CalculateBrind2()
     var isTypingDigit = false
     var displayDigital: Double { // 呈現在計算機上的計算結果，get 時將 label 轉成 Double
         
@@ -35,7 +35,7 @@ class ViewController: UIViewController {
 
         set { // 判斷輸出的數字格式是不是有多餘的 0
 
-            outPut.text = brain.modifyDouble(newValue)
+            outPut.text = newValue.truncatingRemainder(dividingBy: 1) == 0 ? String(Int(newValue)): String(newValue)
         }
     }
 
@@ -107,7 +107,7 @@ class ViewController: UIViewController {
 
             displayStringDigit = digital
         }
-        brain.modifyingOperand = " \(displayStringDigit)"
+//        brain.modifyingOperand = " \(displayStringDigit)"
     }
 
     //所有計算符號包括 π 和 C 的按鈕
