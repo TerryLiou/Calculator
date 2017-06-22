@@ -203,7 +203,6 @@ struct CalculateBrind2 {
 
                         displayDigit = prepareToOperate?.execute(with: digit)
                         prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
-                        isConstant = false
 
                     } else {
 
