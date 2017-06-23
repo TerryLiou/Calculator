@@ -12,18 +12,17 @@ struct CalculateBrind2 {
 
     //MARK: - Property
 
-    private var modifyingOperater = ""
+    private var modifyingOperater = ""           // 運算符號的站暫存
     private var modifyingOperand = ""            // 正在輸入中的數字，因為可能會再被編輯 (unaryOperation) 所以先暫存
-    var stringForLabelDisplay = "0"      // 將要在 UI 上呈現的算式
+    var stringForLabelDisplay = "0"              // 將要在 UI 上呈現的算式
     private var frontOperattionIsAdditionOrSubtraction = false
     private var secnedOperattionIsMultiplyOrDivided = false
     private var haveParentheses: Bool{
         return frontOperattionIsAdditionOrSubtraction && secnedOperattionIsMultiplyOrDivided
     }
     private var displayFormula = DisplayFormula()
-    private var mathematicalFormula = ""
-    private var displayDigit: Double?
-    private var tmpOperand: Double?
+    private var displayDigit: Double?            // 計算結果
+    private var tmpOperand: Double?              // 暫存輸入計算元
     private var prepareToOperate: PrepareToOperate?
 
     // 處理二元運算子
@@ -191,7 +190,7 @@ struct CalculateBrind2 {
                                 displayFormula.displayFormulaSubmit(modifyingOperater, haveParentheses: haveParentheses)
                         }
                     default:
-
+                        
                         if let digit = tmpOperand {
 
                             modifyingOperand =
@@ -209,7 +208,7 @@ struct CalculateBrind2 {
                     displayDigit = function(digit)
                 }
             case .binaryOperator(let function):
-                
+
                 displayFormula.resultIsPending = true
                 if let digit = tmpOperand {
                     //==============================判斷公式存在於否的計算邏輯============================
@@ -227,21 +226,19 @@ struct CalculateBrind2 {
                         prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
                         displayFormula.commit(wiht: modifyingOperand, haveParentheses: false)
                     }
-                    // =======================產生顯示公式字串的邏輯=====================================
-                    modifyingOperand = ""
+//                    modifyingOperand = ""
                     modifyingOperater = " \(sign)"
-                    secnedOperattionIsMultiplyOrDivided = (modifyingOperater == " ×" || modifyingOperater == " ÷") ? true: false
                     tmpOperand = nil
-                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperater,
-                                                                                haveParentheses: haveParentheses)
-                    // ==============================================================================
-                } else if stringForLabelDisplay != "0" {
 
-                    prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
+                } else if stringForLabelDisplay != "0" {
                     modifyingOperater = " \(sign)"
-                    secnedOperattionIsMultiplyOrDivided = (modifyingOperater == " ×" || modifyingOperater == " ÷") ? true: false
-                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperater,haveParentheses: haveParentheses)
+                    prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
                 }
+                    // =======================產生顯示公式字串的邏輯=====================================
+                secnedOperattionIsMultiplyOrDivided = (modifyingOperater == " ×" || modifyingOperater == " ÷") ? true: false
+                stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperater,haveParentheses: haveParentheses)
+                modifyingOperand = ""
+                    // ==============================================================================
             case .equal:
 
                 if prepareToOperate != nil && displayDigit != nil && displayFormula.resultIsPending == true && tmpOperand != nil{
@@ -254,7 +251,7 @@ struct CalculateBrind2 {
                     executeFomula(by: displayDigit!)
                     modifyingOperand = ""
                     modifyingOperater = ""
-                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperater + modifyingOperand, haveParentheses: haveParentheses)
+                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil, haveParentheses: haveParentheses)
                     prepareToOperate = nil
                     tmpOperand = nil
                 }
@@ -263,6 +260,5 @@ struct CalculateBrind2 {
                                             object: nil)
         }
     }
-    
     var result: Double? { return displayDigit }
 }
