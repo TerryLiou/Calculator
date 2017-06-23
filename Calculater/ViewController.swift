@@ -113,22 +113,23 @@ class ViewController: UIViewController {
     //所有計算符號包括 π 和 C 的按鈕
     @IBAction func operate(_ sender: UIButton) {
 
-        if isTypingDigit {
+        if isTypingDigit || sender.currentTitle == "C" {
 
             brain.setOperand(displayDigital)
+
+
+            if let operatorSign = sender.currentTitle {
+
+                brain.preformOperation(by: operatorSign)
+            }
+
+            if let result = brain.result {
+                
+                displayDigital = result
+            }
+            
+            isTypingDigit = false
         }
-
-        if let operatorSign = sender.currentTitle {
-
-            brain.preformOperation(by: operatorSign)
-        }
-
-        if let result = brain.result {
-
-            displayDigital = result
-        }
-
-        isTypingDigit = false
     }
 
     deinit {

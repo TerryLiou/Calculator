@@ -12,15 +12,14 @@ struct CalculateBrind2 {
 
     //MARK: - Property
 
-    var modifyingOperater = ""
-    var modifyingOperand = ""            // 正在輸入中的數字，因為可能會再被編輯 (unaryOperation) 所以先暫存
+    private var modifyingOperater = ""
+    private var modifyingOperand = ""            // 正在輸入中的數字，因為可能會再被編輯 (unaryOperation) 所以先暫存
     var stringForLabelDisplay = "0"      // 將要在 UI 上呈現的算式
     private var frontOperattionIsAdditionOrSubtraction = false
     private var secnedOperattionIsMultiplyOrDivided = false
     private var haveParentheses: Bool{
         return frontOperattionIsAdditionOrSubtraction && secnedOperattionIsMultiplyOrDivided
     }
-    private var isContants = false
     private var displayFormula = DisplayFormula()
     private var mathematicalFormula = ""
     private var displayDigit: Double?
@@ -102,7 +101,7 @@ struct CalculateBrind2 {
     // 將 Double 後方的無效數字消除 ex: 2.30 -> 2.3
     func modifyDouble(_ digit: Double) -> String {
 
-        if digit.truncatingRemainder(dividingBy: Double.pi) == 0 {
+        if digit / Double.pi == 1 {
 
             return "π"
         } else {
@@ -128,7 +127,6 @@ struct CalculateBrind2 {
 
             displayFormula = DisplayFormula()
         }
-
         displayDigit = digit
         tmpOperand = digit
         displayFormula.resultIsPending = true
@@ -166,31 +164,44 @@ struct CalculateBrind2 {
 
                     case "±":
                         // =======================產生顯示公式字串的邏輯=====================================
-                        if displayFormula.resultIsPending {
+                        if let digit = tmpOperand {
 
-                            modifyingOperater = " (-( \(modifyDouble(digit))))"
-
+                            modifyingOperand = modifyingOperand.contains("(-(") ?  " \(modifyDouble(digit))": " (-( \(modifyDouble(digit))))"
                         } else {
 
-                            displayFormula.mathematicalFormula = " -(\(displayFormula.mathematicalFormula + modifyingOperater) )"
+                            if haveParentheses {
 
-                            stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil, haveParentheses: false)
+                                displayFormula.mathematicalFormula =
+                                    displayFormula.mathematicalFormula.contains("-") ? String(displayFormula.mathematicalFormula.characters.dropFirst(1)): "-\(displayFormula.mathematicalFormula)"
+                                stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperater, haveParentheses: haveParentheses)
+                            } else {
 
-                            modifyingOperater = ""
+                                displayFormula.mathematicalFormula = "-( \(displayFormula.mathematicalFormula) )"
+                                stringForLabelDisplay =
+                                    displayFormula.displayFormulaSubmit(modifyingOperater, haveParentheses: haveParentheses)
+                            }
                         }
                     default:
 
-                        if displayFormula.resultIsPending {
+                        if let digit = tmpOperand {
 
-                            modifyingOperater = " \(sign)(\(modifyDouble(digit)) )"
-
+                            modifyingOperand =
+                                modifyingOperand == "" ? " \(sign)(\(modifyDouble(digit)) )" : " \(sign)(\(modifyingOperand) "
                         } else {
 
-                            displayFormula.mathematicalFormula = " \(sign)(\(displayFormula.mathematicalFormula + modifyingOperater) )"
+                            if haveParentheses {
 
-                            stringForLabelDisplay = displayFormula.displayFormulaSubmit(nil, haveParentheses: false)
+                                displayFormula.mathematicalFormula =
+                                " \(sign)\(displayFormula.mathematicalFormula + modifyingOperater )"
+                                stringForLabelDisplay =
+                                    displayFormula.displayFormulaSubmit(modifyingOperater, haveParentheses: haveParentheses)
+                            } else {
 
-                            modifyingOperater = ""
+                                displayFormula.mathematicalFormula =
+                                " \(sign)(\(displayFormula.mathematicalFormula + modifyingOperater) )"
+                                stringForLabelDisplay =
+                                    displayFormula.displayFormulaSubmit(modifyingOperater, haveParentheses: haveParentheses)
+                            }
                         }
                     }
                     // ==============================================================================
@@ -201,20 +212,25 @@ struct CalculateBrind2 {
 
                 if let digit = tmpOperand {
                     //==============================判斷公式存在於否的計算邏輯============================
+                    if modifyingOperand == "" {
+
+                        modifyingOperand = " \(modifyDouble(digit))"
+                    }
+
                     if prepareToOperate != nil {
 
                         displayDigit = prepareToOperate?.execute(with: digit)
                         prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
-                        displayFormula.commit(wiht: modifyingOperater + " \(modifyDouble(digit))", haveParentheses: haveParentheses)
+                        displayFormula.commit(wiht: modifyingOperater + modifyingOperand, haveParentheses: haveParentheses)
                         frontOperattionIsAdditionOrSubtraction = !secnedOperattionIsMultiplyOrDivided
 
                     } else {
 
                         prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
-                        displayFormula.commit(wiht: " \(modifyDouble(digit))", haveParentheses: false)
+                        displayFormula.commit(wiht: modifyingOperand, haveParentheses: false)
                     }
                     // =======================產生顯示公式字串的邏輯=====================================
-
+                    modifyingOperand = ""
                     modifyingOperater = " \(sign)"
                     secnedOperattionIsMultiplyOrDivided = (modifyingOperater == " ×" || modifyingOperater == " ÷") ? true: false
                     tmpOperand = nil
