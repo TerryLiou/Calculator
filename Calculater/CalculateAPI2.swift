@@ -110,6 +110,13 @@ struct CalculateBrind2 {
         }
     }
 
+    private mutating func executeFomula(by digit: Double) {
+
+        displayDigit = prepareToOperate?.execute(with: digit)
+        displayFormula.commit(wiht: modifyingOperater + modifyingOperand, haveParentheses: haveParentheses)
+        frontOperattionIsAdditionOrSubtraction = !secnedOperattionIsMultiplyOrDivided
+    }
+
     private mutating func reset() {
 
         modifyingOperater = ""
@@ -137,14 +144,17 @@ struct CalculateBrind2 {
     // 所有運算符號的判斷
     mutating func preformOperation(by sign: String) {
 
-        displayFormula.resultIsPending = true
-
         if let symbol = operatedSign[sign] {
 
             switch symbol {
 
             case .constant(let digit):
 
+                if !displayFormula.resultIsPending {
+
+                    displayFormula = DisplayFormula()
+                    displayFormula.resultIsPending = true
+                }
                 switch sign {
 
                 case "π":
@@ -199,7 +209,8 @@ struct CalculateBrind2 {
                     displayDigit = function(digit)
                 }
             case .binaryOperator(let function):
-
+                
+                displayFormula.resultIsPending = true
                 if let digit = tmpOperand {
                     //==============================判斷公式存在於否的計算邏輯============================
                     if modifyingOperand == "" {
@@ -209,10 +220,8 @@ struct CalculateBrind2 {
 
                     if prepareToOperate != nil {
 
-                        displayDigit = prepareToOperate?.execute(with: digit)
+                        executeFomula(by: digit)
                         prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
-                        displayFormula.commit(wiht: modifyingOperater + modifyingOperand, haveParentheses: haveParentheses)
-                        frontOperattionIsAdditionOrSubtraction = !secnedOperattionIsMultiplyOrDivided
                     } else {
 
                         prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
@@ -242,13 +251,11 @@ struct CalculateBrind2 {
                         modifyingOperand = " \(modifyDouble(displayDigit!))"
                     }
                     displayFormula.resultIsPending = false
-                    displayDigit = prepareToOperate?.execute(with: displayDigit!)
-                    prepareToOperate = nil
-                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperater + modifyingOperand, haveParentheses: haveParentheses)
-                    displayFormula.commit(wiht: modifyingOperater + modifyingOperand, haveParentheses: haveParentheses)
-                    frontOperattionIsAdditionOrSubtraction = !secnedOperattionIsMultiplyOrDivided
-                    modifyingOperater = ""
+                    executeFomula(by: displayDigit!)
                     modifyingOperand = ""
+                    modifyingOperater = ""
+                    stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperater + modifyingOperand, haveParentheses: haveParentheses)
+                    prepareToOperate = nil
                     tmpOperand = nil
                 }
             }
