@@ -40,10 +40,18 @@ struct CalculateBrind2 {
     private struct DisplayFormula {
 
         var mathematicalFormula = ""    // 已確定執行的公式
-        var resultIsPending = false
-        var tailString: String {
 
-            return resultIsPending ? " ..." : " ="
+//        var tailString: String {
+//
+//            return resultIsPending ? " ..." : " ="
+//        }
+
+        var tailString: String = ""
+
+        var resultIsPending = false {
+            didSet {
+                tailString = resultIsPending ? "..." : " ="
+            }
         }
 
         mutating func commit(wiht modifyOperand: String, haveParentheses: Bool) {
@@ -226,7 +234,6 @@ struct CalculateBrind2 {
                         prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
                         displayFormula.commit(wiht: modifyingOperand, haveParentheses: false)
                     }
-//                    modifyingOperand = ""
                     modifyingOperater = " \(sign)"
                     tmpOperand = nil
 
@@ -235,6 +242,7 @@ struct CalculateBrind2 {
                     prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
                 }
                     // =======================產生顯示公式字串的邏輯=====================================
+
                 secnedOperattionIsMultiplyOrDivided = (modifyingOperater == " ×" || modifyingOperater == " ÷") ? true: false
                 stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperater,haveParentheses: haveParentheses)
                 modifyingOperand = ""
