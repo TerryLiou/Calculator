@@ -134,10 +134,8 @@ struct CalculateBrind2 {
         displayFormula = DisplayFormula()
         prepareToOperate = nil
     }
-
     // 將待運算數字或是運算結果傳來
     mutating func setOperand(_ digit: Double) {
-
         // 當不在運算式當中輸入新的數字時，判斷為新的算式，將 displayFormula 重置
         if !displayFormula.resultIsPending {
 
