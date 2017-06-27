@@ -30,6 +30,7 @@ class ViewController: UIViewController {
         brain = CalculateBrind3()
         outPut.text = "0"
         outputLabel.text = "0"
+        isTypingDigit = false
     }
     //所有數字和小數點的按鈕包括修正鍵
     @IBAction func pressTheButton(_ sender: UIButton) {
@@ -48,7 +49,7 @@ class ViewController: UIViewController {
             if isTypingDigit {
                 outPut.text = displayStringDigit + digital
             } else {
-                if digital == "0" { return }
+                if digital == "0" && outPut.text == "0" { return }
                 outPut.text = (digital == ".") ? displayStringDigit + digital : digital
                 isTypingDigit = true
             }

@@ -41,13 +41,20 @@ struct CalculateBrind3 {
     private var prepareToOperate: PrepareToOperate?
     
     private struct PrepareToOperate {
-        
         let firstOperand: Double
         let function: (Double, Double) -> Double
         
         func execute(with secendDigit: Double) -> Double {
             return function(firstOperand, secendDigit)
         }
+    }
+
+    private struct PrepareStringFormula {
+        var isAdditionOrSubtractionAtFirst = false
+        var isMultiplyOrDividedAtSecend = false
+        var formulaDescription = Array.init(repeating: "", count: 3)
+
+        
     }
     
     mutating func preformOperation(by sign: String) {
@@ -77,16 +84,17 @@ struct CalculateBrind3 {
             case .binaryOperator(let function):
                 
                 if let digit = displayDigit {
-                    if prepareToOperate == nil {
-                        prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
-                        resultIsPending = true
-                    }else{
-                        displayDigit = prepareToOperate?.execute(with: displayDigit!)
-                        prepareToOperate = nil
-                        resultIsPending = false
-                    }
-                    if resultIsPending {
-                        stringForLabelDisplay += sign
+                    if stringForLabelDisplay != "" {
+                        if prepareToOperate == nil {
+                            prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
+                            resultIsPending = true
+                        }else{
+                            displayDigit = prepareToOperate?.execute(with: displayDigit!)
+                            prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
+                        }
+                        if resultIsPending {
+                            stringForLabelDisplay += sign
+                        }
                     }
                 }
                 
