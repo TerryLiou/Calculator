@@ -35,7 +35,7 @@ struct CalculateBrind3 {
 
     mutating func setOperand(_ digit: Double) {
         displayDigit = digit
-        stringForLabelDisplay += String(format: "%g", digit)
+        stringForLabelDisplay = (resultIsPending) ? stringForLabelDisplay + String(format: "%g", digit) : String(format: "%g", digit)
     }
     
     private var prepareToOperate: PrepareToOperate?
@@ -58,6 +58,7 @@ struct CalculateBrind3 {
                 
             case .constant(let digit):
                 displayDigit = digit
+                stringForLabelDisplay = (resultIsPending) ? stringForLabelDisplay + sign: sign
                 resultIsPending = true
                 
             case .unaryOperator(let function):
@@ -65,14 +66,12 @@ struct CalculateBrind3 {
                 if let digit = displayDigit {
                     let tmpSign = (sign == "±") ? "-" : sign
                     displayDigit = function(digit)
-
                     if resultIsPending {
-
+                        stringForLabelDisplay = String(stringForLabelDisplay.characters.dropLast(String(format: "%g", digit).characters.count)) + "\(tmpSign)(\(String(format: "%g", digit)))"
                     } else {
                         stringForLabelDisplay = "\(tmpSign)(\(stringForLabelDisplay))"
-                        resultIsPending = false
                     }
-
+                    resultIsPending = false
                 }
                 
             case .binaryOperator(let function):
@@ -86,6 +85,9 @@ struct CalculateBrind3 {
                         prepareToOperate = nil
                         resultIsPending = false
                     }
+                    if resultIsPending {
+                        stringForLabelDisplay += sign
+                    }
                 }
                 
             case .equal:
@@ -96,13 +98,9 @@ struct CalculateBrind3 {
                     resultIsPending = false
                 }
             }
-            
-            if resultIsPending {
-                stringForLabelDisplay += sign
-            }
         }
     }
-    
+
     var result: Double? {
         
         get {
