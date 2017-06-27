@@ -35,7 +35,12 @@ struct CalculateBrind3 {
 
     mutating func setOperand(_ digit: Double) {
         displayDigit = digit
-        stringForLabelDisplay = (resultIsPending) ? stringForLabelDisplay + String(format: "%g", digit) : String(format: "%g", digit)
+        if resultIsPending {
+            prepareStringFormula.formulaDescription[2] = String(format: "%g", digit)
+        } else {
+            prepareStringFormula.formulaDescription[0] = String(format: "%g", digit)
+        }
+//        stringForLabelDisplay = (resultIsPending) ? stringForLabelDisplay + String(format: "%g", digit) : String(format: "%g", digit)
     }
     
     private var prepareToOperate: PrepareToOperate?
@@ -49,12 +54,20 @@ struct CalculateBrind3 {
         }
     }
 
+    private var prepareStringFormula = PrepareStringFormula()
+
     private struct PrepareStringFormula {
         var isAdditionOrSubtractionAtFirst = false
         var isMultiplyOrDividedAtSecend = false
         var formulaDescription = Array.init(repeating: "", count: 3)
 
-        
+        func formulaCombine() -> String {
+            var str = ""
+            formulaDescription.forEach { (component) in
+                str += component
+            }
+            return str
+        }
     }
     
     mutating func preformOperation(by sign: String) {
@@ -66,6 +79,8 @@ struct CalculateBrind3 {
             case .constant(let digit):
                 displayDigit = digit
                 stringForLabelDisplay = (resultIsPending) ? stringForLabelDisplay + sign: sign
+//                prepareStringFormula.formulaDescription[1] = sign
+//                stringForLabelDisplay = prepareStringFormula.formulaDescription[1]
                 resultIsPending = true
                 
             case .unaryOperator(let function):
