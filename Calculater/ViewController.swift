@@ -70,7 +70,7 @@ class ViewController: UIViewController {
             displayDigital = result
         }
 
-        outputLabel.text = (brain.resultIsPending) ? brain.stringForLabelDisplay + " ..." : brain.stringForLabelDisplay + " ="
+        outputLabel.text = (brain.prepareStringFormula.resultIsPending) ? brain.stringForLabelDisplay + " ..." : brain.stringForLabelDisplay + " ="
         isTypingDigit = false
     }
 }

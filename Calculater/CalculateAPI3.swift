@@ -12,7 +12,6 @@ struct CalculateBrind3 {
     
     private var displayDigit: Double?
     var stringForLabelDisplay = ""
-    var resultIsPending = false
 
     private enum OperationType {
         case constant(Double)
@@ -35,11 +34,12 @@ struct CalculateBrind3 {
 
     mutating func setOperand(_ digit: Double) {
         displayDigit = digit
-        if resultIsPending {
+        if prepareStringFormula.resultIsPending {
             prepareStringFormula.formulaDescription[2] = String(format: "%g", digit)
         } else {
             prepareStringFormula.formulaDescription[0] = String(format: "%g", digit)
         }
+        stringForLabelDisplay = prepareStringFormula.formulaDescription.joined()
 //        stringForLabelDisplay = (resultIsPending) ? stringForLabelDisplay + String(format: "%g", digit) : String(format: "%g", digit)
     }
     
@@ -54,19 +54,31 @@ struct CalculateBrind3 {
         }
     }
 
-    private var prepareStringFormula = PrepareStringFormula()
+    var prepareStringFormula = PrepareStringFormula()
 
-    private struct PrepareStringFormula {
+    struct PrepareStringFormula {
+        var resultIsPending = false
         var isAdditionOrSubtractionAtFirst = false
         var isMultiplyOrDividedAtSecend = false
+        var haveParentheses = false
         var formulaDescription = Array.init(repeating: "", count: 3)
 
-        func formulaCombine() -> String {
-            var str = ""
-            formulaDescription.forEach { (component) in
-                str += component
+        func removeParentheses(_ digit: String) -> String {
+            return digit.replacingOccurrences(of: "(-(", with: "").replacingOccurrences(of: ")", with: "").replacingOccurrences(of: "-(", with: "").replacingOccurrences(of: "(", with: "")
+        }
+
+        mutating func unaryFormulaCombine(by sign: String, with digit: String) -> String {
+            let arrayIndex = (resultIsPending) ? 2: 0
+            if sign == "-" && haveParentheses {
+                formulaDescription[arrayIndex] = (resultIsPending) ? digit: removeParentheses(formulaDescription[arrayIndex])
+                haveParentheses = false
+            } else if sign == "-" && !haveParentheses {
+                formulaDescription[arrayIndex] = (resultIsPending) ? "(-(\(digit)))": "-(\(formulaDescription[0]))"
+                haveParentheses = true
+            } else {
+                formulaDescription[arrayIndex] = (resultIsPending) ? "\(sign)(\(digit))": "\(sign)(\(formulaDescription[0]))"
             }
-            return str
+            return formulaDescription.joined()
         }
     }
     
@@ -78,22 +90,30 @@ struct CalculateBrind3 {
                 
             case .constant(let digit):
                 displayDigit = digit
-                stringForLabelDisplay = (resultIsPending) ? stringForLabelDisplay + sign: sign
-//                prepareStringFormula.formulaDescription[1] = sign
-//                stringForLabelDisplay = prepareStringFormula.formulaDescription[1]
-                resultIsPending = true
+
+                if prepareStringFormula.resultIsPending {
+                    prepareStringFormula.formulaDescription[2] = sign
+                } else {
+                    prepareStringFormula.formulaDescription[0] = sign
+                }
+
+                stringForLabelDisplay = prepareStringFormula.formulaDescription.joined()
+//                stringForLabelDisplay = (resultIsPending) ? stringForLabelDisplay + sign: sign
+                prepareStringFormula.resultIsPending = true
                 
             case .unaryOperator(let function):
                 
                 if let digit = displayDigit {
                     let tmpSign = (sign == "±") ? "-" : sign
                     displayDigit = function(digit)
-                    if resultIsPending {
-                        stringForLabelDisplay = String(stringForLabelDisplay.characters.dropLast(String(format: "%g", digit).characters.count)) + "\(tmpSign)(\(String(format: "%g", digit)))"
-                    } else {
-                        stringForLabelDisplay = "\(tmpSign)(\(stringForLabelDisplay))"
-                    }
-                    resultIsPending = false
+//                    if prepareStringFormula.resultIsPending {
+//                        stringForLabelDisplay = String(stringForLabelDisplay.characters.dropLast(String(format: "%g", digit).characters.count)) + "\(tmpSign)(\(String(format: "%g", digit)))"
+//                    } else {
+//                        stringForLabelDisplay = "\(tmpSign)(\(stringForLabelDisplay))"
+//                    }
+                    stringForLabelDisplay = prepareStringFormula.unaryFormulaCombine(by: tmpSign,
+                                                                                     with: String(format: "%g", digit))
+                    prepareStringFormula.resultIsPending = false
                 }
                 
             case .binaryOperator(let function):
@@ -102,12 +122,12 @@ struct CalculateBrind3 {
                     if stringForLabelDisplay != "" {
                         if prepareToOperate == nil {
                             prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
-                            resultIsPending = true
+                            prepareStringFormula.resultIsPending = true
                         }else{
                             displayDigit = prepareToOperate?.execute(with: displayDigit!)
                             prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
                         }
-                        if resultIsPending {
+                        if prepareStringFormula.resultIsPending {
                             stringForLabelDisplay += sign
                         }
                     }
@@ -118,7 +138,7 @@ struct CalculateBrind3 {
                 if prepareToOperate != nil && displayDigit != nil {
                     displayDigit = prepareToOperate?.execute(with: displayDigit!)
                     prepareToOperate = nil
-                    resultIsPending = false
+                    prepareStringFormula.resultIsPending = false
                 }
             }
         }
