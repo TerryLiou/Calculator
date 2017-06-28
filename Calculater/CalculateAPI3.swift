@@ -57,20 +57,18 @@ struct CalculateBrind3 {
     var prepareStringFormula = PrepareStringFormula()
 
     struct PrepareStringFormula {
+        var tmpOperand = ""
         var resultIsPending = false
         var isAdditionOrSubtractionAtFirst = false
         var isMultiplyOrDividedAtSecend = false
         var haveParentheses = false
         var formulaDescription = Array.init(repeating: "", count: 3)
 
-        func removeParentheses(_ digit: String) -> String {
-            return digit.replacingOccurrences(of: "(-(", with: "").replacingOccurrences(of: ")", with: "").replacingOccurrences(of: "-(", with: "").replacingOccurrences(of: "(", with: "")
-        }
-
         mutating func unaryFormulaCombine(by sign: String, with digit: String) -> String {
             let arrayIndex = (resultIsPending) ? 2: 0
+            tmpOperand = (haveParentheses) ? tmpOperand: formulaDescription[0]
             if sign == "-" && haveParentheses {
-                formulaDescription[arrayIndex] = (resultIsPending) ? digit: removeParentheses(formulaDescription[arrayIndex])
+                formulaDescription[arrayIndex] = (resultIsPending) ? digit: tmpOperand
                 haveParentheses = false
             } else if sign == "-" && !haveParentheses {
                 formulaDescription[arrayIndex] = (resultIsPending) ? "(-(\(digit)))": "-(\(formulaDescription[0]))"
@@ -83,7 +81,6 @@ struct CalculateBrind3 {
     }
     
     mutating func preformOperation(by sign: String) {
-        
         if let symbol = operatedSign[sign] {
             
             switch symbol {
