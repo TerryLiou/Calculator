@@ -38,7 +38,9 @@ class ViewController: UIViewController {
         if let digital = sender.currentTitle {
             let displayStringDigit = outPut.text!
 
-            if displayStringDigit.contains(".") && (digital == ".") { return }
+            if displayStringDigit.contains(".") && (digital == ".") {
+                return
+            }
 
             if digital == "←" {
                 outPut.text = (outPut.text?.characters.count == 1) ? "0" : String(displayStringDigit.characters.dropLast(1))
@@ -49,7 +51,9 @@ class ViewController: UIViewController {
             if isTypingDigit {
                 outPut.text = displayStringDigit + digital
             } else {
-                if digital == "0" && outPut.text == "0" { return }
+                if digital == "0" && outPut.text == "0" {
+                    return
+                }
                 outPut.text = (digital == ".") ? displayStringDigit + digital : digital
                 isTypingDigit = true
             }

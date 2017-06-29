@@ -12,6 +12,7 @@ struct CalculateBrind3 {
     
     private var displayDigit: Double?
     var stringForLabelDisplay = ""
+    var isNewDigit = false
 
     private enum OperationType {
         case constant(Double)
@@ -34,12 +35,11 @@ struct CalculateBrind3 {
 
     mutating func setOperand(_ digit: Double) {
         displayDigit = digit
-        if prepareStringFormula.resultIsPending {
-            prepareStringFormula.formulaDescription[2] = String(format: "%g", digit)
-        } else {
-            prepareStringFormula.formulaDescription[0] = String(format: "%g", digit)
-        }
+        let arrayIndex = (prepareStringFormula.resultIsPending) ? 2: 0
+        prepareStringFormula.formulaDescription[arrayIndex] = (prepareStringFormula.resultIsPending) ? String(format: "%g", digit): String(format: "%g", digit)
         stringForLabelDisplay = prepareStringFormula.formulaDescription.joined()
+        isNewDigit = true
+        prepareStringFormula.resultIsPending = true
 //        stringForLabelDisplay = (resultIsPending) ? stringForLabelDisplay + String(format: "%g", digit) : String(format: "%g", digit)
     }
     
@@ -78,6 +78,25 @@ struct CalculateBrind3 {
             }
             return formulaDescription.joined()
         }
+
+        mutating func binaryFormulaCombine(by sign: String) -> String {
+            isMultiplyOrDividedAtSecend = (sign == "×" || sign == "÷") ? true: false
+            haveParentheses = isMultiplyOrDividedAtSecend && isAdditionOrSubtractionAtFirst
+            formulaDescription[1] = sign
+            if haveParentheses {
+                formulaDescription[0] = "(\(formulaDescription[0]))"
+            } else {
+                formulaDescription[0] = (formulaDescription[0][formulaDescription[0].endIndex] == ")") ? String(formulaDescription[0].characters.dropLast(1).dropFirst(1)): formulaDescription[0]
+            }
+            return formulaDescription.joined()
+        }
+
+        mutating func commitFormula() {
+            formulaDescription[0] = formulaDescription.joined()
+            formulaDescription[1] = ""
+            formulaDescription[2] = ""
+            isAdditionOrSubtractionAtFirst = !isMultiplyOrDividedAtSecend
+        }
     }
     
     mutating func preformOperation(by sign: String) {
@@ -87,13 +106,8 @@ struct CalculateBrind3 {
                 
             case .constant(let digit):
                 displayDigit = digit
-
-                if prepareStringFormula.resultIsPending {
-                    prepareStringFormula.formulaDescription[2] = sign
-                } else {
-                    prepareStringFormula.formulaDescription[0] = sign
-                }
-
+                let arrayIndex = (prepareStringFormula.resultIsPending) ? 2: 0
+                prepareStringFormula.formulaDescription[arrayIndex] = (prepareStringFormula.resultIsPending) ? sign: sign
                 stringForLabelDisplay = prepareStringFormula.formulaDescription.joined()
 //                stringForLabelDisplay = (resultIsPending) ? stringForLabelDisplay + sign: sign
                 prepareStringFormula.resultIsPending = true
@@ -110,26 +124,76 @@ struct CalculateBrind3 {
 //                    }
                     stringForLabelDisplay = prepareStringFormula.unaryFormulaCombine(by: tmpSign,
                                                                                      with: String(format: "%g", digit))
-                    prepareStringFormula.resultIsPending = false
+//                    prepareStringFormula.resultIsPending = false
                 }
                 
             case .binaryOperator(let function):
                 
                 if let digit = displayDigit {
-                    if stringForLabelDisplay != "" {
-                        if prepareToOperate == nil {
+//                    if stringForLabelDisplay != "" {
+//                        if prepareToOperate == nil {
+//                            prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
+//                            prepareStringFormula.resultIsPending = true
+//                        }else{
+//                            displayDigit = prepareToOperate?.execute(with: displayDigit!)
+//                            prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
+//                        }
+//
+//                        if prepareStringFormula.resultIsPending {
+//                            stringForLabelDisplay += sign
+//                        }
+//                    }
+
+                    if isNewDigit {                     // 表示按運算符號前有輸入數字
+                        if prepareToOperate == nil {    // 還沒有公式的情況
                             prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
-                            prepareStringFormula.resultIsPending = true
-                        }else{
-                            displayDigit = prepareToOperate?.execute(with: displayDigit!)
+                            stringForLabelDisplay = prepareStringFormula.binaryFormulaCombine(by: sign)
+                        } else {
+                            displayDigit = prepareToOperate?.execute(with: digit)
                             prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
+                            prepareStringFormula.commitFormula()
+                            stringForLabelDisplay = prepareStringFormula.binaryFormulaCombine(by: sign)
                         }
-                        if prepareStringFormula.resultIsPending {
-                            stringForLabelDisplay += sign
-                        }
+                        isNewDigit = false
+                    } else if stringForLabelDisplay != "0" {
+                        prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
+                        stringForLabelDisplay = prepareStringFormula.binaryFormulaCombine(by: sign)
                     }
+                    prepareStringFormula.isMultiplyOrDividedAtSecend = (sign == "×" || sign == "÷") ? true: false
                 }
-                
+//
+//                private mutating func executeFomula(by digit: Double) {
+//                    displayDigit = prepareToOperate?.execute(with: digit)
+//                    displayFormula.commit(wiht: modifyingOperater + modifyingOperand, haveParentheses: haveParentheses)
+//                    frontOperattionIsAdditionOrSubtraction = !secnedOperattionIsMultiplyOrDivided
+//                }
+
+//                displayFormula.resultIsPending = true
+//                if let digit = tmpOperand {
+//                    //==============================判斷公式存在於否的計算邏輯============================
+//                    if modifyingOperand == "" {
+//                        modifyingOperand = " \(modifyDouble(digit))"
+//                    }
+//
+//                    if prepareToOperate != nil {
+//                        executeFomula(by: digit)
+//                        prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
+//                    } else {
+//                        prepareToOperate = PrepareToOperate(firstOperand: digit, function: function)
+//                        displayFormula.commit(wiht: modifyingOperand, haveParentheses: false)
+//                    }
+//                    modifyingOperater = " \(sign)"
+//                    tmpOperand = nil
+//
+//                } else if stringForLabelDisplay != "0" {
+//                    modifyingOperater = " \(sign)"
+//                    prepareToOperate = PrepareToOperate(firstOperand: displayDigit!, function: function)
+//                }
+//                // =======================產生顯示公式字串的邏輯=====================================
+//
+//                secnedOperattionIsMultiplyOrDivided = (modifyingOperater == " ×" || modifyingOperater == " ÷") ? true: false
+//                stringForLabelDisplay = displayFormula.displayFormulaSubmit(modifyingOperater,haveParentheses: haveParentheses)
+//                modifyingOperand = ""
             case .equal:
                 
                 if prepareToOperate != nil && displayDigit != nil {
