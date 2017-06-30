@@ -84,9 +84,9 @@ struct CalculateBrind3 {
             haveParentheses = isMultiplyOrDividedAtSecend && isAdditionOrSubtractionAtFirst
             formulaDescription[1] = sign
             if haveParentheses {
-                formulaDescription[0] = "(\(formulaDescription[0]))"
+                formulaDescription[0] = (formulaDescription[0].characters.last == ")") ? formulaDescription[0]: "(\(formulaDescription[0]))"
             } else {
-                formulaDescription[0] = (formulaDescription[0][formulaDescription[0].endIndex] == ")") ? String(formulaDescription[0].characters.dropLast(1).dropFirst(1)): formulaDescription[0]
+                formulaDescription[0] = (formulaDescription[0].characters.last == ")") ? String(formulaDescription[0].characters.dropLast(1).dropFirst(1)): formulaDescription[0]
             }
             return formulaDescription.joined()
         }
@@ -198,6 +198,7 @@ struct CalculateBrind3 {
                 
                 if prepareToOperate != nil && displayDigit != nil {
                     displayDigit = prepareToOperate?.execute(with: displayDigit!)
+                    prepareStringFormula.commitFormula()
                     prepareToOperate = nil
                     prepareStringFormula.resultIsPending = false
                 }
